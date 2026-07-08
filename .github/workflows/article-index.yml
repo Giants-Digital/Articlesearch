@@ -104,39 +104,56 @@ jobs:
             const news = new Map(existing);
             const now = new Date();
 
-            for (let year = 2016; year <= now.getFullYear(); year++) {
-              for (let month = 1; month <= 12; month++) {
-                if (year === now.getFullYear() && month > now.getMonth() + 1) continue;
+            
+          const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-                const url = `https://www.giants.com/sitemap/html/news/${year}/${month}`;
-                console.log(`Fetching ${url}`);
-
-                try {
-                  const html = await get(url);
-                  const linkRegex = /<a[^>]+href="([^"]*\/news\/[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
-                  let match;
-                  while ((match = linkRegex.exec(html)) !== null) {
-                    const href = match[1];
-                    const title = match[2].replace(/<[^>]+>/g, '').trim();
-                    if (!href || !title) continue;
-
-                    const fullUrl = href.startsWith('http')
-                      ? href
-                      : `https://www.giants.com${href}`;
-
-                    if (!news.has(fullUrl)) {
-                      news.set(fullUrl, { title, url: fullUrl, thumb: '', date: '', dateVerified: false });
-                    } else {
-                      news.get(fullUrl).title = title;
-                    }
-                  }
-                } catch (e) {
-                  console.warn(`Skipping ${url}: ${e.message}`);
+          for (const letter of letters) {
+            const url = `https://www.giants.com/sitemap/${letter}`;
+          
+            console.log(`Fetching ${url}`);
+          
+            try {
+              const html = await get(url);
+          
+              const linkRegex = /href="([^"]*\/news\/[^"]*)"/gi;
+          
+              let match;
+          
+              while ((match = linkRegex.exec(html)) !== null) {
+          
+                const href = match[1];
+          
+                const fullUrl = href.startsWith("http")
+                  ? href
+                  : `https://www.giants.com${href}`;
+          
+                if (
+                  fullUrl.includes("/news/index") ||
+                  fullUrl.includes("/news/newsletter") ||
+                  fullUrl.includes("/news/transcripts") ||
+                  fullUrl.includes("/news/cover3") ||
+                  fullUrl.includes("/news/factorfiction")
+                ) {
+                  continue;
                 }
-
-                await new Promise(r => setTimeout(r, 150));
+          
+                if (!news.has(fullUrl)) {
+                  news.set(fullUrl, {
+                    title: fullUrl.split("/").pop().replace(/-/g, " "),
+                    url: fullUrl,
+                    thumb: "",
+                    date: "",
+                    dateVerified: false
+                  });
+                }
               }
+          
+            } catch (e) {
+              console.warn(`Skipping ${url}: ${e.message}`);
             }
+          
+            await new Promise(r => setTimeout(r, 150));
+          }
 
             // --- Manual overrides ---
             const overrides = [];
