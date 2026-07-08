@@ -110,8 +110,6 @@ jobs:
 
                 const url = `https://www.giants.com/sitemap/html/news/${year}/${month}`;
                 console.log(`Fetching ${url}`);
-                
-                console.log(html.substring(0,5000));
 
                 try {
                   const html = await get(url);
