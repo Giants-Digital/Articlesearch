@@ -147,28 +147,28 @@ jobs:
             
             let hydrated = 0;       
             
-for (const article of news.values()) {
+            for (const article of news.values()) {
 
-  if (article.thumb) continue;
+            if (article.thumb) continue;
 
-  if (hydrated >= MAX_THUMBS_PER_RUN) {
-    console.log(`Reached hydration limit of ${MAX_THUMBS_PER_RUN}`);
-    break;
-  }
+            if (hydrated >= MAX_THUMBS_PER_RUN) {
+              console.log(`Reached hydration limit of ${MAX_THUMBS_PER_RUN}`);
+              break;
+            }
 
-  try {
-    const html = await get(article.url);
+          try {
+          const html = await get(article.url);
 
-    article.thumb = extractOgImage(html);
+          article.thumb = extractOgImage(html);
 
-    if (article.thumb) {
-      hydrated++;
-      console.log(`Thumbnail found: ${article.title}`);
-    }
-  } catch (e) {
-    console.warn(`Could not hydrate ${article.url}`);
-  }
-}
+           if (article.thumb) {
+            hydrated++;
+            console.log(`Thumbnail found: ${article.title}`);
+            }
+          } catch (e) {
+          console.warn(`Could not hydrate ${article.url}`);
+            }
+          }
 
             // --- Rest of script unchanged ---
             const arr = Array.from(news.values());
