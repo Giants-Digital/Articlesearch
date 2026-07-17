@@ -54,15 +54,24 @@ jobs:
           }
 
           function extractDate(html) {
-            const d3Match = html.match(/class="d3-o-media-object__date"[^>]*>\s*([^<]+?)\s*<\//);
+            const jsonLdMatch = html.match(/"datePublished":"([^"]+)"/);
+            
+            if (jsonLdMatch) {
+              return jsonLdMatch[1];
+            }
+            
+            const d3Match = html.match(/class="d3-o-media-object__date"[^>]*>\s*([^<]+?)\s*</);
             if (d3Match) return d3Match[1].trim();
-
+            
             const ogMatch = html.match(/<meta[^>]+property="article:published_time"[^>]+content="([^"]+)"/);
             if (ogMatch) return ogMatch[1];
-
+            
             const timeMatch = html.match(/<time[^>]+datetime="([^"]+)"/);
-            return timeMatch ? timeMatch[1] : '';
+            if (timeMatch) return timeMatch[1];
+            
+            return '';
           }
+
 
           function extractDescription(html) {
             const ogMatch = html.match(/<meta[^>]+property="og:description"[^>]+content="([^"]+)"/) ||
@@ -166,7 +175,7 @@ jobs:
             
             for (const article of news.values()) {
 
-            if (article.thumb) continue;
+            if (article.thumb && article.date && article.dateVerified) continue;
 
             if (hydrated >= MAX_THUMBS_PER_RUN) {
               console.log(`Reached hydration limit of ${MAX_THUMBS_PER_RUN}`);
@@ -177,6 +186,13 @@ jobs:
           const html = await get(article.url);
 
           article.thumb = extractOgImage(html);
+
+          const date = extractDate(html);
+          
+          if (date) {
+            article.date = date;
+            article.dateVerified = true;
+          }
 
            if (article.thumb) {
             hydrated++;
