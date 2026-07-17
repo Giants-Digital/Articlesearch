@@ -226,7 +226,9 @@ jobs:
           
           fs.writeFileSync('articles.json', JSON.stringify(arr));
           console.log(`Done — ${arr.length} articles written to articles.json`);
-
+          
+          }
+          
           main().catch(err => { console.error(err); process.exit(1); });
           EOF
 
